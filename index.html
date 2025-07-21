@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Галерея с индикатором загрузки</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #f0f0f0; font-family: Arial, sans-serif;
+      overflow-x: hidden;
+    }
+    .gallery-container {
+      width: 100vw; max-width: 100vw;
+      background: white; box-sizing: border-box;
+      padding-bottom: 160px; /* место под панель */
+      position: relative; /* для позиционирования индикатора */
+    }
+    .main-image {
+      position: relative; /* для индикатора */
+    }
+    .main-image img {
+      display: block; width: 100%; height: auto;
+      user-select: none; border-radius: 0;
+    }
+    /* Индикатор загрузки - оверлей */
+    .loading-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      visibility: hidden; /* скрыт по умолчанию */
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none; /* чтобы не блокировать клики, но мы будем блокировать через JS */
+    }
+    .loading-overlay.visible {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Крутилка (spinner) */
+    .spinner {
+      border: 6px solid #ccc;
+      border-top: 6px solid #333;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .button-bar {
+      position: fixed; bottom: 0; left: 0; width: 100vw;
+      background: #222; padding: 10px 0; margin: 0;
+      box-sizing: border-box; display: flex;
+      justify-content: center; align-items: center;
+      gap: 80px; z-index: 1000;
+      box-shadow: 0 -2px 20px rgba(0,0,0,0.6);
+      height: 160px;
+    }
+    .button-bar button {
+      background: transparent; border: none;
+      cursor: pointer; outline: none;
+      transition: transform 0.2s ease;
+      padding: 0; display: flex;
+      align-items: center; justify-content: center;
+      width: 160px; height: 160px;
+    }
+    .button-bar button:hover,
+    .button-bar button.active {
+      transform: scale(1.15);
+    }
+    .button-bar img {
+      width: 140px; height: 140px;
+      filter: brightness(0) invert(1);
+      user-select: none; pointer-events: none;
+      display: block; object-fit: contain;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="gallery-container">
+    <div class="main-image">
+      <img id="displayed-image" src="image1.jpg" alt="Основное изображение" />
+      <div id="loading-overlay" class="loading-overlay" aria-live="polite" aria-label="Загрузка изображения">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="button-bar" role="toolbar" aria-label="Панель выбора изображений">
+    <button class="image-btn active" data-img="image1.jpg" aria-label="Показать изображение 1">
+      <img src="icon1.png" alt="Иконка 1" />
+    </button>
+    <button class="image-btn" data-img="image2.jpg" aria-label="Показать изображение 2">
+      <img src="icon2.png" alt="Иконка 2" />
+    </button>
+    <button class="image-btn" data-img="image3.jpg" aria-label="Показать изображение 3">
+      <img src="icon3.png" alt="Иконка 3" />
+    </button>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.image-btn');
+    const mainImage = document.getElementById('displayed-image');
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    let isLoading = false;
+
+    function showLoading() {
+      loadingOverlay.classList.add('visible');
+    }
+    function hideLoading() {
+      loadingOverlay.classList.remove('visible');
+    }
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (isLoading) return; // блокируем клики во время загрузки
+
+        const newSrc = button.getAttribute('data-img');
+        if (mainImage.src.endsWith(newSrc)) {
+          // Если картинка уже загружена, просто прокрутим вверх
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        isLoading = true;
+        showLoading();
+
+        // Обновляем активный класс
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        // Создадим временный Image для загрузки
+        const tempImg = new Image();
+        tempImg.src = newSrc;
+
+        tempImg.onload = () => {
+          mainImage.src = newSrc;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          isLoading = false;
+          hideLoading();
+        };
+
+        tempImg.onerror = () => {
+          isLoading = false;
+          hideLoading();
+          alert('Ошибка загрузки изображения');
+        };
+      });
+    });
+  </script>
+
+</body>
+</html>
