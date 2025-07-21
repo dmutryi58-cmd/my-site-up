@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Галерея с кнопками</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      justify-content: space-between;
+      background: #f0f0f0;
+    }
+    .main-image {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: white;
+      padding: 20px;
+    }
+    .main-image img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .button-bar {
+      display: flex;
+      justify-content: center;
+      background: #222;
+      padding: 10px 0;
+      width: 588px;
+      margin: 0 auto;
+    }
+    .button-bar button {
+      background: transparent;
+      border: none;
+      margin: 0 15px;
+      cursor: pointer;
+      outline: none;
+      transition: transform 0.2s ease;
+    }
+    .button-bar button:hover,
+    .button-bar button.active {
+      transform: scale(1.2);
+    }
+    .button-bar img {
+      width: 50px;
+      height: 50px;
+      filter: brightness(0) invert(1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-image">
+    <img id="displayed-image" src="image1.jpg" alt="Основное изображение" />
+  </div>
+
+  <div class="button-bar">
+    <button class="image-btn active" data-img="image1.jpg" aria-label="Показать изображение 1">
+      <img src="icon1.png" alt="Иконка 1" />
+    </button>
+    <button class="image-btn" data-img="image2.jpg" aria-label="Показать изображение 2">
+      <img src="icon2.png" alt="Иконка 2" />
+    </button>
+    <button class="image-btn" data-img="image3.jpg" aria-label="Показать изображение 3">
+      <img src="icon3.png" alt="Иконка 3" />
+    </button>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.image-btn');
+    const mainImage = document.getElementById('displayed-image');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Меняем основное изображение
+        const newSrc = button.getAttribute('data-img');
+        mainImage.src = newSrc;
+
+        // Обновляем активную кнопку
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>
